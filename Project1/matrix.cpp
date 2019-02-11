@@ -130,6 +130,6 @@ int main(int argc, char *argv[]) {
 		}
 		cout << endl;
 	}
-
-	return 0;
+	
+	pthread_exit(NULL);
 }
