@@ -41,6 +41,7 @@ void *matrix_mult(void *args) {
 		result[boi -> row][boi -> col] += in1[boi -> row][i] * in2[i][boi -> col];
 	}
 
+	pthread_exit(NULL);
 	//Return NULL
 	return NULL;
 }
@@ -110,7 +111,6 @@ int main(int argc, char *argv[]) {
 
 	for (i = 0; i < MAX; i++) { //Creates the 9 threads
 		for (j = 0; j < MAX; j++) {
-			cout << "creating thread: " << i << endl;
 			pthread_create(&threads[j + (MAX * i)], NULL, &matrix_mult, (void*) &doggo[i][j]);
 			//Index 1 dimensional array from a 2 dimensional array
 		}
