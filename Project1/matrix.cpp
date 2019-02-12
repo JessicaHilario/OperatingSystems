@@ -1,5 +1,5 @@
-//Jessica Hialrio
-//Joel Rodriguez
+//Jessica Hialrio 013944279
+//Joel Rodriguez 015222816
 //This program reads a matrix from a text file 
 //and outputs a 3x3 matrix by combining the 2
 //matrices given from the 2 inputs.
