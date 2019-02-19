@@ -90,7 +90,7 @@ int main(int argc, char *argv[]) {
 		for (j = 0; j < MAX; j++) {
 			if (scan1.hasNext()) {
 				//Converts the string into an int
-				istringstream(scan1.next()) >> in1[i][j];
+			istringstream(scan1.next()) >> in1[i][j];
 				cout << in1[i][j] << " ";
 			}
 		}
