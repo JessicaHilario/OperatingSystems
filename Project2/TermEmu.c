@@ -20,17 +20,21 @@
 
 int main(int argc, char *argv[]) {
 	
-	while (true) {
-		printf("/User/Desktop/Project2>>");
-	}
-	int link[2];
-
-	dup2(link[1], STDOUT_FILENO);
-	close(link[0]);
-	close(link[1]);
+	char *cmd = "";
+	int i = 0;
 	
-	if
+	printf("Project Shell\n");
+	printf("Loading the shell...");
 
+	while(strcmp(cmd,"exit") != 0) {
+		printf("/User/Desktop/Project2>>>");
+		printf("\n");
+		i++;
+
+		if (i == 5) {
+			pass;
+		}
+
+	}
 	return 0;
 }
-
