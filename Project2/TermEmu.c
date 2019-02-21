@@ -11,22 +11,19 @@
  *
  */
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 #include <sys/wait.h>
 
-/*
-  Function Declarations for builtin shell commands:
- */
+//Function Declarations for builtin shell commands:
+ 
 int chd(char **args);
 int exit_shell(char **args);
 
-/*
-  List of builtin commands, followed by their corresponding functions.
- */
+//List of builtin commands, followed by their functions.
+ 
 char *builtin_str[] = {
 	"cd",
 	"exit"
@@ -41,47 +38,39 @@ int num_builtins() {
 	return sizeof(builtin_str) / sizeof(char *);
 }
 
-/*
-  Builtin function implementations.
-*/
 
-/**
-   @brief Bultin command: change directory.
-   @param args List of args.  args[0] is "cd".  args[1] is the directory.
-   @return Always returns 1, to continue executing.
- */
+//Implementing built-in functions
+//changing the directory
 int chd(char **args)
 {
+//args[1] is the directory, checks if the directory is null
   if (args[1] == NULL) {
     fprintf(stderr, "lsh: expected argument to \"cd\"\n");
-  } else {
+	  
+  } 
+  else {
+    //checks if chdir(args[1]) is the "cd" command
     if (chdir(args[1]) != 0) {
       perror("lsh");
     }
   }
+//returns 1 to continue executing the program
   return 1;
 }
 
-/**
-   @brief Builtin command: exit.
-   @param args List of args.  Not examined.
-   @return Always returns 0, to terminate execution.
- */
+//exit built-in command
 int exit_shell(char **args)
 {
+  //returns 0 to terminate execution
   return 0;
 }
 
-/**
-  @brief Launch a program and wait for it to terminate.
-  @param args Null terminated list of arguments (including program).
-  @return Always returns 1, to continue execution.
- */
+//launching a program and terminating it
 int launch(char **args)
 {
   pid_t pid, wpid;
   int status;
-
+  //creating a fork
   pid = fork();
   if (pid == 0) {
     // Child process
@@ -89,28 +78,31 @@ int launch(char **args)
       perror("lsh");
     }
     exit(EXIT_FAILURE);
-  } else if (pid < 0) {
+  } 
+	
+  else if (pid < 0) {
     // Error forking
     perror("lsh");
-  } else {
+  } 
+	
+  else {
     // Parent process
     do {
       wpid = waitpid(pid, &status, WUNTRACED);
     } while (!WIFEXITED(status) && !WIFSIGNALED(status));
+	  
   }
-
+  //returning 1 to continue program execution
   return 1;
 }
 
-/**
-   @brief Execute shell built-in or launch program.
-   @param args Null terminated list of arguments.
-   @return 1 if the shell should continue running, 0 if it should terminate
- */
+//executes command or launches a program
 int execute_command(char **args)
 {
   int i;
 
+  //checking if they entered nothing in "cd"
+  //returns 1 to continue running, 0 to terminate
   if (args[0] == NULL) {
     // An empty command was entered.
     return 1;
@@ -126,10 +118,8 @@ int execute_command(char **args)
 }
 
 #define RL_BUFSIZE 1024
-/**
-   @brief Read a line of input from stdin.
-   @return The line from stdin.
- */
+
+//reads a line of input and stores it in a pointer
 char *read_line(void)
 {
   int bufsize = RL_BUFSIZE;
@@ -169,11 +159,9 @@ char *read_line(void)
 
 #define TOK_BUFSIZE 64
 #define TOK_DELIM " \t\r\n\a"
-/**
-   @brief Split a line into tokens (very naively).
-   @param line The line.
-   @return Null-terminated array of tokens.
- */
+
+
+//split a line into tokens
 char **split_line(char *line)
 {
   int bufsize = TOK_BUFSIZE, position = 0;
@@ -205,24 +193,18 @@ char **split_line(char *line)
   return tokens;
 }
 
-/**
-   @brief Main entry point.
-   @param argc Argument count.
-   @param argv Argument vector.
-   @return status code
- */
+//main
 int main(int argc, char **argv)
 {
-  // Load config files, if any.
-
-  // Run command loop.
-
+  
+  //running the problem
 	char *line;
 	char **args;
 	int status;
 	printf("Project Shell\n");
 	printf("Loading the shell...\n\n");
 
+	//continually prints out the shell while the program is running
 	do {
 		printf("/User/Desktop/Project2>>>");
 		line = read_line();
@@ -232,8 +214,6 @@ int main(int argc, char **argv)
 		free(line);
 		free(args);
 	} while (status);
-
-  // Perform any shutdown/cleanup.
 
   return EXIT_SUCCESS;
 }
