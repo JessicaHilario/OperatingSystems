@@ -16,204 +16,277 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
 
-//Function Declarations for builtin shell commands:
- 
-int chd(char **args);
-int exit_shell(char **args);
+#define die(e) do { fprintf(stderr, "%s\n", e); exit(EXIT_FAILURE); } while(0);
 
-//List of builtin commands, followed by their functions.
- 
-char *builtin_str[] = {
-	"cd",
-	"exit"
-};
+#ifdef __unix__
+	#define IS_POSIX 1
+#else
+	#define IS_POSIX 0
+#endif
 
-int (*builtin_func[]) (char **) = {
-	chd,
-	exit_shell
-};
-
-int num_builtins() {
-	return sizeof(builtin_str) / sizeof(char *);
-}
-
-
-//Implementing built-in functions
-//changing the directory
-int chd(char **args)
-{
-//args[1] is the directory, checks if the directory is null
-  if (args[1] == NULL) {
-    fprintf(stderr, "lsh: expected argument to \"cd\"\n");
-	  
-  } 
-  else {
-    //checks if chdir(args[1]) is the "cd" command
-    if (chdir(args[1]) != 0) {
-      perror("lsh");
-    }
-  }
-//returns 1 to continue executing the program
-  return 1;
-}
-
-//exit built-in command
-int exit_shell(char **args)
-{
-  //returns 0 to terminate execution
-  return 0;
-}
-
-//launching a program and terminating it
-int launch(char **args)
-{
-  pid_t pid, wpid;
-  int status;
-  //creating a fork
-  pid = fork();
-  if (pid == 0) {
-    // Child process
-    if (execvp(args[0], args) == -1) {
-      perror("lsh");
-    }
-    exit(EXIT_FAILURE);
-  } 
+//Check the ls -l command
+int check_ls(const char* cmd) {
+	//Should put const in front of them since we aren't writing to them
+	const char *target = "ls-l";
+	char tmp[4];
 	
-  else if (pid < 0) {
-    // Error forking
-    perror("lsh");
-  } 
+	//i will be the index for cmd
+	int i = 0;
+	//j will be the index for tmp
+       	int j = 0;
 	
-  else {
-    // Parent process
-    do {
-      wpid = waitpid(pid, &status, WUNTRACED);
-    } while (!WIFEXITED(status) && !WIFSIGNALED(status));
-	  
-  }
-  //returning 1 to continue program execution
-  return 1;
+	//Puts all the letters from the command line into a temp array
+	while (i < strlen(cmd)) {
+		if(*(cmd + i) != ' ') {
+			tmp[j] = *(cmd + i);
+			j += 1;
+		}
+
+		if(j == 4) {
+			break;
+		}
+		i += 1;
+	}
+	
+	return memcmp(tmp, target, 4) == 0;
 }
 
-//executes command or launches a program
-int execute_command(char **args)
-{
-  int i;
+//Checks the exit command
+int check_exit(const char* cmd) {
+	const char *target = "exit";
+	char tmp[4];
+	
+	//i will be the index for cmd
+	int i = 0;
+	//j will be the index for tmp
+       	int j = 0;
+	
+	//Puts all the letters from the command line into a temp array
+	while (i < strlen(cmd)) {
+		if(*(cmd + i) != ' ') {
+			tmp[j] = *(cmd + i);
+			j += 1;
+		}
 
-  //checking if they entered nothing in "cd"
-  //returns 1 to continue running, 0 to terminate
-  if (args[0] == NULL) {
-    // An empty command was entered.
-    return 1;
-  }
-
-  for (i = 0; i < num_builtins(); i++) {
-    if (strcmp(args[0], builtin_str[i]) == 0) {
-      return (*builtin_func[i])(args);
-    }
-  }
-
-  return launch(args);
+		if(j == 4) {
+			break;
+		}
+		i += 1;
+	}
+	
+	return memcmp(tmp, target, 4) == 0;
 }
 
-#define RL_BUFSIZE 1024
+//Checks the cp command
+int check_cp(const char* cmd) {
+	const char *target = "cp";
+	char tmp[2];
+	
+	//i will be the index for cmd
+	int i = 0;
+	//j will be the index for tmp
+       	int j = 0;
+	
+	//Puts all the letters from the command line into a temp array
+	while (i < strlen(cmd)) {
+		if(*(cmd + i) != ' ') {
+			tmp[j] = *(cmd + i);
+			j += 1;
+		}
 
-//reads a line of input and stores it in a pointer
-char *read_line(void)
-{
-  int bufsize = RL_BUFSIZE;
-  int position = 0;
-  char *buffer = malloc(sizeof(char) * bufsize);
-  int c;
-
-  if (!buffer) {
-    fprintf(stderr, "lsh: allocation error\n");
-    exit(EXIT_FAILURE);
-  }
-
-  while (1) {
-    // Read a character
-    c = getchar();
-
-    // If we hit EOF, replace it with a null character and return.
-    if (c == EOF || c == '\n') {
-      buffer[position] = '\0';
-      return buffer;
-    } else {
-      buffer[position] = c;
-    }
-    position++;
-
-    // If we have exceeded the buffer, reallocate.
-    if (position >= bufsize) {
-      bufsize += RL_BUFSIZE;
-      buffer = realloc(buffer, bufsize);
-      if (!buffer) {
-        fprintf(stderr, "lsh: allocation error\n");
-        exit(EXIT_FAILURE);
-      }
-    }
-  }
+		if(j == 2) {
+			break;
+		}
+		i += 1;
+	}
+	
+	return memcmp(tmp, target, 2) == 0;
 }
 
-#define TOK_BUFSIZE 64
-#define TOK_DELIM " \t\r\n\a"
+//Checks the kill command
+int check_kill(const char* cmd) {
+	const char *target = "kill";
+	char tmp[4];
+	
+	//i will be the index for cmd
+	int i = 0;
+	//j will be the index for tmp
+       	int j = 0;
+	
+	//Puts all the letters from the command line into a temp array
+	while (i < strlen(cmd)) {
+		if(*(cmd + i) != ' ') {
+			tmp[j] = *(cmd + i);
+			j += 1;
+		}
 
-
-//split a line into tokens
-char **split_line(char *line)
-{
-  int bufsize = TOK_BUFSIZE, position = 0;
-  char **tokens = malloc(bufsize * sizeof(char*));
-  char *token;
-
-  if (!tokens) {
-    fprintf(stderr, "lsh: allocation error\n");
-    exit(EXIT_FAILURE);
-  }
-
-  token = strtok(line, TOK_DELIM);
-  while (token != NULL) {
-    tokens[position] = token;
-    position++;
-
-    if (position >= bufsize) {
-      bufsize += TOK_BUFSIZE;
-      tokens = realloc(tokens, bufsize * sizeof(char*));
-      if (!tokens) {
-        fprintf(stderr, "lsh: allocation error\n");
-        exit(EXIT_FAILURE);
-      }
-    }
-
-    token = strtok(NULL, TOK_DELIM);
-  }
-  tokens[position] = NULL;
-  return tokens;
+		if(j == 4) {
+			break;
+		}
+		i += 1;
+	}
+	
+	return memcmp(tmp, target, 4) == 0;
 }
 
-//main
-int main(int argc, char **argv)
+//Checks the cd command
+int check_cd(const char* cmd) {
+	const char *target = "cd";
+	char tmp[2];
+	
+	//i will be the index for cmd
+	int i = 0;
+	//j will be the index for tmp
+       	int j = 0;
+	
+	//Puts all the letters from the command line into a temp array
+	while (i < strlen(cmd)) {
+		if(*(cmd + i) != ' ') {
+			tmp[j] = *(cmd + i);
+			j += 1;
+		}
+
+		if(j == 2) {
+			break;
+		}
+		i += 1;
+	}
+	
+	return memcmp(tmp, target, 2) == 0;
+}
+
+char ** split(const char* cmd, char c, int *n) {
+	int strLen = strlen(cmd);	
+	char ** tmp = (char**) malloc(sizeof(char*)*(strLen/2)+1); //Creates the size needed in bytes
+	int counter = 0;
+	
+	//Points to the start of the string
+	for (int start = 0; start < strLen; start ++) {
+
+		if (cmd[start] != c) {
+
+			//Points to the end of the string
+			for (int end = start; end < strLen; end ++) {
+
+				//If the string contains c, allocate memory and copy the memory size
+				if (cmd[end] == c || end == strLen - 1) {
+					int size = end - start + 1;//Getting the size of the string
+					char* add = (char*) malloc(size);//Allocating memory for the string
+					memcpy(add, cmd+start, size);//Copying the memory address
+					add[size-1] = '\0';//Make the last charatcer of the string a null character
+					tmp[counter++] = add;
+					start = end;
+					break;
+				}
+			}
+		}
+	}
+
+	*n = counter;
+	tmp = realloc(tmp, sizeof(char*)*counter); //Resizes the block of memory to the new size of memory
+	return tmp;
+}
+
+//Clear up the allocated memory
+void free_string_array(char **array, int len)
 {
-  
-  //running the problem
-	char *line;
-	char **args;
-	int status;
-	printf("Project Shell\n");
-	printf("Loading the shell...\n\n");
+	for (int i = 0; i < len; i++) {
+		free(array[i]);
+	}
+	free(array);
+}
 
-	//continually prints out the shell while the program is running
-	do {
-		printf("/User/Desktop/Project2>>>");
-		line = read_line();
-		args = split_line(line);
-		status = execute_command(args);
+//Validates and executes the commands
+void execute_command(char cmdin[]) {
+	int link[2];
+	pid_t pid;
+	struct stat sb;
 
-		free(line);
-		free(args);
-	} while (status);
+	//Checked in the parent process to actually exit and change the directory
+	if (check_exit(cmdin)) {
+		exit(0);
+	}
 
-  return EXIT_SUCCESS;
+	if (check_cd(cmdin)) {
+		int argc;
+		char** argv = split(cmdin,' ', &argc);
+
+		if (chdir(argv[1]) != 0) {
+			printf("No such directory\n");
+		}
+
+		free_string_array(argv, argc);
+
+		return;
+	}
+
+	if(pipe(link)==-1) {
+		die("pipe");
+	}
+
+	if((pid=fork()) == -1) {
+		die("fork");
+	}
+
+	if(pid == 0) {
+		if (check_ls(cmdin)) {
+			int argc; 
+			char** argv = split(cmdin,' ', &argc);
+			
+			execl("/bin/ls", argv[0], argv[1], (char *)0);
+			die("execl");
+			free_string_array(argv, argc);
+
+			return;
+		}
+		if (check_cp(cmdin)) {
+			int argc; 
+			char** argv = split(cmdin,' ', &argc);
+
+			if (stat(argv[1], &sb) == 0) {
+				execl("/bin/cp", argv[0], argv[1], argv[2], (char *) 0);
+				die("execl");
+			}
+			else { 
+				perror("stat");
+				exit(EXIT_FAILURE);
+			}
+			free_string_array(argv, argc);
+
+			return;
+		}
+		if (check_kill(cmdin)) {
+			int argc;
+			char** argv = split(cmdin,' ', &argc);
+			
+			execl("/bin/kill", argv[0], argv[1], (char *)0);
+			free_string_array(argv, argc);
+
+			return;
+		}
+		else {
+			printf("Not a valid command\n");
+		}
+		exit(0);
+	}	
+
+}
+
+int main(int argc, char *argv[]) {
+
+
+	char cmd[1000];
+	while(strcmp(cmd,"exit")!=0) {
+		if (IS_POSIX == 1) {
+			char *dir = getcwd(NULL, 0);
+			printf("%s>>> ", dir);
+			free(dir);
+			fgets(cmd, 1000, stdin);
+			execute_command(cmd);
+			wait(NULL);
+		}
+	}
+	return 0;
 }

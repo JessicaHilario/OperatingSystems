@@ -13,7 +13,7 @@ and ready to run.
 For the contribution of this prject, Joel and Jessica worked on 
 the project collaboratively doing research online and combining
 the work we have found online to compile into one code. Jessica 
-developed the loop for the continuous shell and the command 
-validation as well as having the working directory change. Joel 
-did the documentation of the document and contributed to the 
-research that was implemented in this code.
+developed the shell with the current working directory, 
+and validating and executing the commands within the proper
+process. Joel did the documentation of the document and code 
+format.
