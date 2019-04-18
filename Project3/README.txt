@@ -1,0 +1,38 @@
+Jessica Hilario 013944279
+Joel Rodriguez 015222816
+Project 3/HM 3
+
+For this project, the program has been split up into 2 functions: the main 
+function (readAddr) and a helper function (print_info). The readAddr function
+ takes an address as its parameter and validates whether it is an allocated 
+address within the virtual memory area. If it is allocated, it will call the
+ other function to print out the other information then break out of the loop.
+ The other function, print_info, takes the found address inside the virtual 
+memory struct and determines if the virtual memory is readable, writable, and/or
+ executable. Once the correct type is found, it prints the start and end 
+address of that virtual memory area along with its flags.
+
+To compile the code, first type in the command make. Once it has compiled, the
+ name of the module that we will be adding into the kernel is called
+ "kernel_call.ko". So knowing the module name, "insmod kernel_call.ko" then 
+dmesg to to see the module work inside the kernel. For precaution, remove the module from the kernel using "rmmod kernel_call.ko". To make sure that it has 
+been removed, type the command dmesg to show the kernel's log.
+
+When it comes to developing this program, Joel did some research on the 
+assignment in terms of what virtual memory is as well as some examples that 
+can be seen for reference. Jessica made the kernel_call program by using some
+ of the research that Joel found as well as from online resources that class
+ has provided.
+
+The different APIs used to allocate memory in Linux user space are brk() and 
+sbrk(). The brk() function should be used when we want to allocate the available space accordingly based on the value of the end data segment. The
+ sbrk() function should be used when we want to allocate the available space accordingly based on the number of bytes passed through.
+
+How the system recognizes p as an invalid address is that at first it sees it as a virtual memory address. With the virtual memory address stored as the 
+value within that address it was stored in, it will first look up that value in the TLB. Once it is not found, it will then check in the page table. Once
+ it reaches the page table, it will realize that the value of p is not an 
+address and return an error.
+
+The information saved in /proc/$pid/maps is the starting and ending address of 
+the region in the process address' space, permissions in how the page can be
+ accessed, an offset if the region was mapped to a file using mmap, device which is where the file lives, inode which is the file number, and the pathname of the file.
